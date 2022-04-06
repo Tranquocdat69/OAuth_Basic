@@ -6,16 +6,26 @@ builder.Services.AddAuthentication("Bearer")
         options.Authority = "https://localhost:7104/";
 
         options.Audience = "ApiOne";
-
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ApiOneScope", policyBuilder =>
+    {
+        policyBuilder.RequireAuthenticatedUser();
+        policyBuilder.RequireClaim("scope", "ScopeApiOne");
+    });
+});
 
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers().RequireAuthorization("ApiOneScope");
 
 app.Run();
